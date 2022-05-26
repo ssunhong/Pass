@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "org.techtown.biopass"
-        minSdk 29
+        minSdk 24
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -29,9 +29,9 @@ android {
 
 dependencies {
 
-    implementation 'com.journeyapps:zxing-android-embedded:4.2.0'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation group: 'net.sf.ntru', name: 'ntru', version: '1.2'
-    implementation 'androidx.biometric:biometric:1.0.1'
+    implementation 'androidx.biometric:biometric:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'

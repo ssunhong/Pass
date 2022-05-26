@@ -1,11 +1,18 @@
 package org.techtown.biopass;
 
+import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
+import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK;
+import static android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+
+import static com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
@@ -26,16 +33,12 @@ public class MainActivity extends AppCompatActivity {
     private BiometricPrompt biometricPrompt;
     private BiometricPrompt.PromptInfo promptInfo;
 
+
+    @SuppressLint("WrongConstant")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        if(nfcAdapter == null){
-            Toast.makeText(getApplicationContext(), "NFC를 지원하지 않는 단말기입니다.", Toast.LENGTH_SHORT).show();
-            finish();
-        }
 
         executor = ContextCompat.getMainExecutor(this);
         biometricPrompt = new BiometricPrompt(this,
@@ -70,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 .setDeviceCredentialAllowed(false)
                 .build();
 
-        //  사용자가 다른 인증을 이용하길 원할 때 추가하기
-
         Button biometricLoginButton = findViewById(R.id.buttonAuthWithFingerprint);
         biometricLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,5 +80,15 @@ public class MainActivity extends AppCompatActivity {
                 biometricPrompt.authenticate(promptInfo);
             }
         });
+
+        Button scanButton = findViewById(R.id.scanButton);
+        scanButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ScanActivity.class);
+                startActivity(intent);
+            }
+        });
     }
+
 }
