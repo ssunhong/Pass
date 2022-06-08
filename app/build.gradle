@@ -1,6 +1,9 @@
 plugins {
     id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
 }
+apply plugin: 'kotlin-android'
 
 android {
     compileSdk 31
@@ -28,9 +31,9 @@ android {
 }
 
 dependencies {
-
+// https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.70'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
-    implementation group: 'net.sf.ntru', name: 'ntru', version: '1.2'
     implementation 'androidx.biometric:biometric:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
