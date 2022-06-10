@@ -66,17 +66,17 @@ public class QrCreateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_qr_create);
         ImageView qr = findViewById(R.id.QRview);
         Intent intent = getIntent();
-        String msg = intent.getStringExtra("Enc");
+        String ID = intent.getStringExtra("ID");
+        String name = intent.getStringExtra("name");
 
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         try{
-            test();
             PublicKey pk = getPublicKey(getApplicationContext().getFilesDir().getPath()+"public.pem");
             McElieceCipher EnCipheredText = new McElieceCipher();
             McEliecePublicKeyParameters GPKP = (McEliecePublicKeyParameters) McElieceKeysToParams.generatePublicKeyParameter((PublicKey) pk);
             EnCipheredText.init(true, GPKP);
-            byte[] ciphertextBytes = EnCipheredText.messageEncrypt(msg.getBytes());
-            BitMatrix bitMatrix = multiFormatWriter.encode(new String(ciphertextBytes), BarcodeFormat.QR_CODE, 600, 600);
+            byte[] ciphertextBytes = EnCipheredText.messageEncrypt(ID.getBytes());
+            BitMatrix bitMatrix = multiFormatWriter.encode(new String(ciphertextBytes)+","+name, BarcodeFormat.QR_CODE, 600, 600);
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
             Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
             qr.setImageBitmap(bitmap);
@@ -120,28 +120,5 @@ public class QrCreateActivity extends AppCompatActivity {
         byte[] ciphertextBytes = EnCipheredText.messageEncrypt(msg.getBytes());
         //Log.e("ciphertextBytes", new String(ciphertextBytes) );
         return new String(ciphertextBytes);
-    }
-
-    public void test() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidCipherTextException {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance("McEliece", "BCPQC");
-
-        McElieceKeyGenParameterSpec params = new McElieceKeyGenParameterSpec(9, 33);
-        kpg.initialize(params);
-
-        KeyPair mcelieceKp = kpg.generateKeyPair();
-        PublicKey publicKey = mcelieceKp.getPublic();
-        PrivateKey privateKey = mcelieceKp.getPrivate();
-
-        McElieceCipher EnCipheredText = new McElieceCipher();
-        McEliecePublicKeyParameters GPKP = (McEliecePublicKeyParameters) McElieceKeysToParams.generatePublicKeyParameter(publicKey);
-        EnCipheredText.init(true, GPKP);
-        byte[] ciphertextBytes = EnCipheredText.messageEncrypt("me".getBytes());
-
-        McEliecePrivateKeyParameters G =  (McEliecePrivateKeyParameters) McElieceKeysToParams.generatePrivateKeyParameter(privateKey);
-        EnCipheredText.init(false, G);
-        byte[] de = EnCipheredText.messageDecrypt(ciphertextBytes);
-
-        Log.e("test", new String(de));
-
     }
 }

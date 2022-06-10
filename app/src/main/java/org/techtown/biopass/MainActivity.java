@@ -20,6 +20,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
 import android.os.Build;
@@ -70,34 +71,17 @@ public class MainActivity extends AppCompatActivity {
     private Executor executor;
     private BiometricPrompt biometricPrompt;
     private BiometricPrompt.PromptInfo promptInfo;
-    private File pemFile;
     private client c = new client();
+    private SharedPreferences preferences;
 
     @SuppressLint("WrongConstant")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.e("path", getApplicationContext().getFilesDir().getPath() );
-        pemFile = new File(getApplicationContext().getFilesDir().getPath()+"public.pem");
-        Security.addProvider(new BouncyCastlePQCProvider());
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        preferences = getSharedPreferences("name", MODE_PRIVATE);
         String ID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        String key = null;
-        if (checkPemFile()) {
-            try {
-                key = c.execute("getkey", ID).get();
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            }
-            try {
-                writePemFile(getPublicKey(key));
-            } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-        }
-
             promptInfo = new BiometricPrompt.PromptInfo.Builder()
                     .setTitle("지문 인증")
                     .setSubtitle("기기에 등록된 지문을 이용하여 지문을 인증해주세요.")
@@ -130,12 +114,9 @@ public class MainActivity extends AppCompatActivity {
                         @NonNull BiometricPrompt.AuthenticationResult result) {
                     super.onAuthenticationSucceeded(result);
 
-                    Date currentTime = new Date();
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
-                    String getTime = simpleDateFormat.format(currentTime);
-
                     Intent intent = new Intent(MainActivity.this, QrCreateActivity.class);
-                    intent.putExtra("Enc", ID );
+                    intent.putExtra("ID", ID);
+                    intent.putExtra("name", preferences.getString("name", ""));
                     startActivity(new Intent(intent));
                 }
 
@@ -160,29 +141,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        String[] res = result.getContents().split(",");
+
+        String msg = null;
         if (result != null) {
             if (result.getContents() != null) {
-                Toast.makeText(this, result.getContents(), Toast.LENGTH_LONG).show();
+                try {
+                    msg = c.execute("scan", res[0], res[1]).get();
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);
             }
         }
-    }
-
-    public boolean checkPemFile(){
-        if(pemFile.isFile())
-            return false;
-        else
-            return true;
-    }
-    private void writePemFile(Key key) throws IOException {
-        Pem pemFile = new Pem(key, "publicKey");
-        pemFile.write(getApplicationContext().getFilesDir().getPath()+"public.pem");
-    }
-    private Key getPublicKey(String key) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] b = Base64.decode(key, Base64.DEFAULT);
-        KeyFactory keyFactory = KeyFactory.getInstance("McEliece");
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(b);
-        return keyFactory.generatePublic(keySpec);
+        if(msg != null){
+            Toast.makeText(this, "Open", Toast.LENGTH_SHORT).show();
+        }
     }
 }
