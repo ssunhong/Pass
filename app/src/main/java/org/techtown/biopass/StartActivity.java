@@ -76,7 +76,9 @@ public class StartActivity extends AppCompatActivity {
                         Log.e("writeFile", "success" );
                         c = new client();
                         String enc = Enc(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID),publicKey);
-                        c.execute("responseDeviceID", enc, name);
+                        response = c.execute("responseDeviceID", enc, name).get();
+                        if(response.equals("Enroll"))
+                            startActivity(new Intent(StartActivity.this, MainActivity.class));
                     }
                 } catch (ExecutionException | InterruptedException | NoSuchAlgorithmException | InvalidKeySpecException | IOException | InvalidKeyException | InvalidCipherTextException e) {
                     e.printStackTrace();
