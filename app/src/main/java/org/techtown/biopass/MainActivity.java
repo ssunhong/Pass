@@ -141,24 +141,16 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        String[] res = result.getContents().split(",");
-
-        String msg = null;
-        if (result != null) {
-            if (result.getContents() != null) {
-                try {
-                    msg = c.execute("scan", res[0], res[1]).get();
-                } catch (ExecutionException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                super.onActivityResult(requestCode, resultCode, data);
-            }
+        client c = new client();
+        String response = null;
+        try {
+            response = c.execute("scan", result.getContents()).get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
         }
-        if(msg != null){
-            Toast.makeText(this, "Open", Toast.LENGTH_SHORT).show();
-        }
+            Toast.makeText(this, response, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -177,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
         // 마지막으로 뒤로 가기 버튼을 눌렀던 시간에 2.5초를 더해 현재 시간과 비교 후
         // 마지막으로 뒤로 가기 버튼을 눌렀던 시간이 2.5초가 지나지 않았으면 종료
         if (System.currentTimeMillis() <= backKeyPressedTime + 2500) {
-            finish();
-            Toast.makeText(this,"이용해 주셔서 감사합니다.",Toast.LENGTH_LONG).show();
+            ActivityCompat.finishAffinity(this);
+            System.exit(0);
         }
     }
 }

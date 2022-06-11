@@ -30,11 +30,8 @@ public class client extends AsyncTask<String, Void, String> {
             }else if(strings[0].equals("responseDeviceID")){
                 str = "action="+strings[0]+"&DeviceID="+strings[1]+"&name="+strings[2];
             }else if(strings[0].equals("scan")){
-                str = "action="+strings[0]+"&encryted="+strings[1]+"&name="+strings[2];
+                str = "action="+strings[0]+"&encryted="+strings[1];
             }
-            Log.e("string[0]", strings[0]);
-            Log.e("string[1]", strings[1]);
-            Log.e("string[2]", strings[2]);
             osw.write(str);
             osw.flush();
 

@@ -29,6 +29,7 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.pqc.crypto.mceliece.McElieceCipher;
 import org.bouncycastle.pqc.crypto.mceliece.McEliecePrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.mceliece.McEliecePublicKeyParameters;
+import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.bouncycastle.pqc.jcajce.provider.mceliece.McElieceKeysToParams;
 import org.bouncycastle.pqc.jcajce.spec.McElieceKeyGenParameterSpec;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -38,6 +39,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -49,6 +51,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -64,6 +67,9 @@ public class QrCreateActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_create);
+
+        Security.addProvider(new BouncyCastlePQCProvider());
+
         ImageView qr = findViewById(R.id.QRview);
         Intent intent = getIntent();
         String ID = intent.getStringExtra("ID");
@@ -76,7 +82,10 @@ public class QrCreateActivity extends AppCompatActivity {
             McEliecePublicKeyParameters GPKP = (McEliecePublicKeyParameters) McElieceKeysToParams.generatePublicKeyParameter((PublicKey) pk);
             EnCipheredText.init(true, GPKP);
             byte[] ciphertextBytes = EnCipheredText.messageEncrypt(ID.getBytes());
-            BitMatrix bitMatrix = multiFormatWriter.encode(new String(ciphertextBytes)+","+name, BarcodeFormat.QR_CODE, 600, 600);
+            String enc = Base64.encodeToString(ciphertextBytes, Base64.DEFAULT);
+            enc = URLEncoder.encode(enc, "EUC-KR");
+            Log.e("QR", name+","+enc );
+            BitMatrix bitMatrix = multiFormatWriter.encode(name+","+enc, BarcodeFormat.QR_CODE, 600, 600);
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
             Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
             qr.setImageBitmap(bitmap);
